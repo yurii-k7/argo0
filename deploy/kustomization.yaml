@@ -6,4 +6,4 @@ resources:
   - service.yaml
 images:
   - name: argo0-app
-    newTag: 9.9.9
+    newTag: 1.1.0
