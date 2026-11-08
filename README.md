@@ -104,7 +104,8 @@ They never touch your other clusters or change your current context.
 | `scripts/stop.sh` | Stops the cluster and keeps its state. |
 | `scripts/start.sh` | Restarts a stopped cluster and waits for Argo CD. |
 | `scripts/status.sh` | Shows cluster state, Argo CD pods, Application sync and health, and app pods. |
-| `scripts/ui.sh` | Port-forwards the UI to `localhost:8080`, logs in the CLI, prints the admin password. |
+| `scripts/ui.sh` | Port-forwards the UI to `localhost:8080` and prints the admin password. |
+| `scripts/argocd.sh <args>` | Runs the `argocd` CLI against this cluster, logging in as admin. Works without `ui.sh`. |
 | `scripts/app.sh` | Port-forwards the sample app to `localhost:8081`. |
 | `scripts/refresh.sh` | Makes Argo CD check Git now rather than waiting for the next poll. |
 | `scripts/build-app.sh <version>` | Builds `argo0-app:<version>` inside minikube. |
@@ -154,6 +155,8 @@ argo0/
 - **Dedicated profile.** Using `-p argo0` keeps the playground separate from any other minikube cluster.
 - **UI over port-forward.** Under WSL2 with the Docker driver, NodePorts are awkward to reach from
   Windows, while a forwarded `localhost` port normally just works.
+- **CLI through its own port-forward.** The server resets raw gRPC connections arriving over a
+  `kubectl port-forward`, so `argocd.sh` uses the CLI's built-in `--port-forward` mode instead.
 - **Plain HTTP inside the playground.** `server.insecure` is on, which avoids self-signed certificate
   warnings. This is for local use only.
 - **Lean install.** Dex and notifications are disabled because nothing here uses them.
@@ -168,21 +171,22 @@ in Git, so older versions are gone.
 
 ## Exercises
 
-Each exercise assumes `./scripts/ui.sh` is running in another terminal.
+Keep `./scripts/ui.sh` running in another terminal if you want the UI. The CLI exercises use
+`scripts/argocd.sh` and do not need it.
 
 1. **Look around.** Open the app in the UI and find its resource tree, sync status and health.
-   Run `argocd app get argo0-app` and compare.
+   Run `./scripts/argocd.sh app get argo0-app` and compare.
 2. **Release through Git.** Run `./scripts/release.sh 1.1.0`, then commit and push. Run
    `./scripts/refresh.sh` and watch the rolling update. Confirm the new version with `./scripts/app.sh`.
 3. **Self-heal.** Run `kubectl --context argo0 -n demo scale deploy argo0-app --replicas=5` and watch
    Argo CD put it back to the replica count in Git.
-4. **See drift.** Turn off auto-sync with `argocd app set argo0-app --sync-policy none`, repeat the
-   scale command, then inspect `argocd app diff argo0-app`. Sync by hand and turn auto-sync back on.
+4. **See drift.** Turn off auto-sync with `./scripts/argocd.sh app set argo0-app --sync-policy none`, repeat the
+   scale command, then inspect `./scripts/argocd.sh app diff argo0-app`. Sync by hand and turn auto-sync back on.
 5. **Prune.** Add a ConfigMap to `deploy/` and push it. Remove it and push again, then watch Argo CD delete it.
 6. **Ship a broken release.** Set the tag in `deploy/kustomization.yaml` to a version that was never
    built, then push. Watch the app go from `Progressing` to `Degraded`, and notice the old pods keep serving.
 7. **Roll back.** Use `git revert` and push, which is the GitOps way. Then compare with
-   `argocd app rollback`, which requires auto-sync to be off and leaves Git and the cluster disagreeing.
+   `./scripts/argocd.sh app rollback argo0-app`, which requires auto-sync to be off and leaves Git and the cluster disagreeing.
 8. **Start over.** Run `./scripts/teardown.sh`, then `./scripts/bootstrap.sh`, and confirm the state
    comes back from Git alone.
 

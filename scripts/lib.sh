@@ -45,9 +45,3 @@ wait_argocd() {
 
 # Current image tag in deploy/kustomization.yaml.
 current_tag() { sed -nE 's/^[[:space:]]*newTag:[[:space:]]*"?([^"[:space:]]+)"?.*/\1/p' "$ROOT/deploy/kustomization.yaml"; }
-
-# Port-forward a service in the background; echo the PID.
-port_forward() { # ns svc local remote
-  kc -n "$1" port-forward "svc/$2" "$3:$4" >/dev/null 2>&1 &
-  echo $!
-}
