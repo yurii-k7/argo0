@@ -1,0 +1,23 @@
+# Rendered by scripts/bootstrap.sh (envsubst of REPO_URL and TARGET_REVISION).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo0-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # deleting the Application deletes its resources
+spec:
+  project: default
+  source:
+    repoURL: ${REPO_URL}
+    targetRevision: ${TARGET_REVISION}
+    path: deploy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

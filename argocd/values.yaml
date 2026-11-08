@@ -1,0 +1,12 @@
+# Helm values for the argo-cd chart (playground settings, local use only).
+dex:
+  enabled: false
+notifications:
+  enabled: false
+applicationSet:
+  enabled: true
+configs:
+  params:
+    server.insecure: true            # plain HTTP behind port-forward, no self-signed cert warnings
+  cm:
+    timeout.reconciliation: 60s      # poll Git every minute instead of ~3 minutes

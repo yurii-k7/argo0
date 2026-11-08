@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo0-app
+  labels: {app: argo0-app}
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: argo0-app}
+  template:
+    metadata:
+      labels: {app: argo0-app}
+    spec:
+      containers:
+        - name: app
+          image: argo0-app
+          imagePullPolicy: Never   # images are built inside minikube, never pulled
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+            periodSeconds: 3
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8080}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
