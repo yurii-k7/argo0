@@ -4,8 +4,8 @@ A local playground for learning [Argo CD](https://argo-cd.readthedocs.io/) on mi
 One script creates everything, one script removes it, and a set of exercises walks through
 the core GitOps workflow.
 
-> **Status: implemented.** The tool installer, app image and manifests are tested. The full
-> bootstrap against minikube is untested until the repo is pushed; see [Build order](#build-order).
+> **Status: working.** Bootstrap, release, self-heal, drift, broken release, rollback and
+> teardown/rebuild were run end to end on minikube v1.39.0 (Kubernetes v1.37.2, WSL2).
 
 ## How it works
 
@@ -197,4 +197,4 @@ Keep `./scripts/ui.sh` running in another terminal if you want the UI. The CLI e
 - [x] `argocd/values.yaml`, `argocd/application.yaml.tmpl` (Helm render tested)
 - [x] `scripts/bootstrap.sh`, `scripts/teardown.sh`
 - [x] `scripts/start.sh`, `stop.sh`, `status.sh`, `ui.sh`, `app.sh`, `refresh.sh`, `release.sh`
-- [ ] First push to GitHub, then a full bootstrap, exercises and teardown run
+- [x] First push to GitHub, then a full bootstrap, exercises and teardown run (exercise 5, prune, not run)
