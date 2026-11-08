@@ -106,7 +106,7 @@ They never touch your other clusters or change your current context.
 | `scripts/status.sh` | Shows cluster state, Argo CD pods, Application sync and health, and app pods. |
 | `scripts/ui.sh` | Port-forwards the UI to `localhost:8080` and prints the admin password. |
 | `scripts/argocd.sh <args>` | Runs the `argocd` CLI against this cluster, logging in as admin. Works without `ui.sh`. |
-| `scripts/app.sh` | Port-forwards the sample app to `localhost:8081`. |
+| `scripts/app.sh` | Prints a local URL for the sample app through the minikube node. Survives pod restarts. |
 | `scripts/refresh.sh` | Makes Argo CD check Git now rather than waiting for the next poll. |
 | `scripts/build-app.sh <version>` | Builds `argo0-app:<version>` inside minikube. |
 | `scripts/release.sh <version>` | Runs `build-app.sh`, then updates the image tag in `deploy/kustomization.yaml`. |
@@ -155,6 +155,9 @@ argo0/
 - **Dedicated profile.** Using `-p argo0` keeps the playground separate from any other minikube cluster.
 - **UI over port-forward.** Under WSL2 with the Docker driver, NodePorts are awkward to reach from
   Windows, while a forwarded `localhost` port normally just works.
+- **NodePort for the app, not port-forward.** `kubectl port-forward` pins to one pod and dies when
+  it is killed. A NodePort Service lets kube-proxy balance across ready pods, and `minikube service`
+  provides the local tunnel to the node.
 - **CLI through its own port-forward.** The server resets raw gRPC connections arriving over a
   `kubectl port-forward`, so `argocd.sh` uses the CLI's built-in `--port-forward` mode instead.
 - **Plain HTTP inside the playground.** `server.insecure` is on, which avoids self-signed certificate
@@ -177,7 +180,7 @@ Keep `./scripts/ui.sh` running in another terminal if you want the UI. The CLI e
 1. **Look around.** Open the app in the UI and find its resource tree, sync status and health.
    Run `./scripts/argocd.sh app get argo0-app` and compare.
 2. **Release through Git.** Run `./scripts/release.sh 1.1.0`, then commit and push. Run
-   `./scripts/refresh.sh` and watch the rolling update. Confirm the new version with `./scripts/app.sh`.
+   `./scripts/refresh.sh` and watch the rolling update. Confirm the new version at the URL printed by `./scripts/app.sh`.
 3. **Self-heal.** Run `kubectl --context argo0 -n demo scale deploy argo0-app --replicas=5` and watch
    Argo CD put it back to the replica count in Git.
 4. **See drift.** Turn off auto-sync with `./scripts/argocd.sh app set argo0-app --sync-policy none`, repeat the

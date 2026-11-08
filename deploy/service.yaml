@@ -4,6 +4,7 @@ metadata:
   name: argo0-app
   labels: {app: argo0-app}
 spec:
+  type: NodePort   # reachable via the minikube node; kube-proxy balances across ready pods
   selector: {app: argo0-app}
   ports:
     - port: 80

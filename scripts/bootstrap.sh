@@ -56,6 +56,6 @@ cat <<MSG
 
 Done. Next:
   ./scripts/ui.sh     Argo CD UI at http://localhost:8080 (keep it running)
-  ./scripts/app.sh    sample app at http://localhost:8081
+  ./scripts/app.sh    sample app, prints its URL
   ./scripts/status.sh overview
 MSG
