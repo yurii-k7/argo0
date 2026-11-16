@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install pinned, checksum-verified kubectl, helm and argocd into ~/.local/bin (no sudo).
+# Install pinned, checksum-verified kubectl, helm, argocd and k9s into ~/.local/bin (no sudo).
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 BIN="$HOME/.local/bin"; mkdir -p "$BIN"
@@ -33,6 +33,18 @@ if [[ "$(argocd version --client --short 2>/dev/null)" != *"${ARGOCD_CLI_VERSION
   echo "$want  $TMP/argocd-linux-$ARCH" | sha256sum -c - >/dev/null
   install -m 0755 "$TMP/argocd-linux-$ARCH" "$BIN/argocd"
 else log "argocd $ARGOCD_CLI_VERSION already installed"; fi
+
+if [[ "$(k9s version --short 2>/dev/null)" != *"${K9S_VERSION#v}"* ]]; then
+  log "Installing k9s $K9S_VERSION"
+  f=k9s_Linux_$ARCH.tar.gz
+  base=https://github.com/derailed/k9s/releases/download/$K9S_VERSION
+  curl -fsSL "$base/$f" -o "$TMP/$f"
+  want=$(curl -fsSL "$base/checksums.sha256" | awk -v f="$f" '$2==f{print $1}')
+  [[ -n "$want" ]] || die "no checksum found for $f"
+  echo "$want  $TMP/$f" | sha256sum -c - >/dev/null
+  mkdir "$TMP/k9s" && tar -xzf "$TMP/$f" -C "$TMP/k9s" k9s
+  install -m 0755 "$TMP/k9s/k9s" "$BIN/k9s"
+else log "k9s $K9S_VERSION already installed"; fi
 
 command -v minikube >/dev/null || die "minikube not found; install it first (https://minikube.sigs.k8s.io)."
 case ":$PATH:" in *":$BIN:"*) ;; *) warn "$BIN is not in your PATH";; esac
